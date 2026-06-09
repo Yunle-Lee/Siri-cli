@@ -1,5 +1,7 @@
-import os
+"""Configuration management for fm-clone (~/.fm-clone/)."""
+
 import json
+import os
 from pathlib import Path
 
 FM_DIR = Path.home() / ".fm-clone"
@@ -35,6 +37,16 @@ def get_default_model() -> str:
 def set_default_model(model: str):
     cfg = load_config()
     cfg["default_model"] = model
+    save_config(cfg)
+
+
+def get_appearance() -> str:
+    return load_config().get("appearance", "auto")
+
+
+def set_appearance(mode: str):
+    cfg = load_config()
+    cfg["appearance"] = mode
     save_config(cfg)
 
 
