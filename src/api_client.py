@@ -28,17 +28,17 @@ USE_CASES = {
 }
 
 
-def _get_client():
+def _get_client(model: str = None):
     try:
         from openai import OpenAI
     except ImportError:
         sys.exit("Error: 'openai' package is required. Run: pip install openai")
 
-    cfg = get_api_config()
+    cfg = get_api_config(model)
     api_key = cfg["api_key"]
     base_url = cfg["base_url"]
 
-    if not api_key:
+    if not api_key and "localhost" not in base_url and "127.0.0.1" not in base_url:
         sys.exit(
             "Error: No API key found. Set FM_API_KEY or OPENAI_API_KEY environment variable,\n"
             "       or configure via: fm config --set-api-key <key>"
@@ -90,8 +90,7 @@ def chat_completion(
     use_case: str = "general",
     images: list[str] = None,
 ) -> Iterator[str] | str:
-    client, default_model = _get_client()
-    model = model or default_model
+    client, resolved_model = _get_client(model)
 
     # ── inject guardrails / use-case into messages ─────────────────
     enhanced_messages = list(messages)
@@ -156,11 +155,11 @@ def count_tokens(text: str, model: str = None) -> int:
         return len(text.split())
 
 
-def check_availability() -> dict:
-    client, model = _get_client()
+def check_availability(model: str = None) -> dict:
+    client, resolved_model = _get_client(model)
     try:
         models = client.models.list()
-        return {"available": True, "model": model, "provider": str(client.base_url)}
+        return {"available": True, "model": resolved_model, "provider": str(client.base_url)}
     except Exception as e:
         return {"available": False, "error": str(e)}
 

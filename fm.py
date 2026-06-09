@@ -519,18 +519,28 @@ def handle_serve(args):
 
 
 def handle_available(args):
-    result = check_availability()
-    if result["available"]:
-        render_text(f"  System model available", "success")
-        render_text(f"  Provider: {result['provider']}", "dim")
+    # Check system model
+    sys_result = check_availability("system")
+    if sys_result["available"]:
+        render_text(f"  System model available: {sys_result['model']}", "success")
+        render_text(f"  Provider: {sys_result['provider']}", "dim")
     else:
-        render_error(f"  System model unavailable: {result.get('error', 'Unknown error')}")
+        render_error(f"  System model unavailable: {sys_result.get('error', 'Unknown error')}")
+
+    # Check pcc model
+    pcc_result = check_availability("pcc")
+    if pcc_result["available"]:
+        render_text(f"  PCC model available: {pcc_result['model']}", "success")
+        render_text(f"  Provider: {pcc_result['provider']}", "dim")
+    else:
+        render_error(f"  PCC model unavailable: {pcc_result.get('error', 'Unknown error')}")
 
 
 def handle_quota_usage(args):
-    cfg = get_api_config()
-    print(f"System: {_rgb(*GRAY)}Not applicable (quota depends on API provider){RESET}")
-    print(f"Provider: {cfg['base_url']}")
+    sys_cfg = get_api_config("system")
+    pcc_cfg = get_api_config("pcc")
+    print(f"System: {GRAY_HEX}Model: {sys_cfg['model']} @ {sys_cfg['base_url']}{RESET}")
+    print(f"PCC:    {GRAY_HEX}Model: {pcc_cfg['model']} @ {pcc_cfg['base_url']}{RESET}")
 
 
 def handle_config(args):

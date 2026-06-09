@@ -50,10 +50,20 @@ def set_appearance(mode: str):
     save_config(cfg)
 
 
-def get_api_config() -> dict:
-    return {
-        "base_url": os.environ.get("FM_API_BASE", load_config().get("base_url", "https://api.openai.com/v1")),
-        "api_key": os.environ.get("FM_API_KEY", os.environ.get("OPENAI_API_KEY", load_config().get("api_key", ""))),
-        "model": os.environ.get("FM_MODEL", load_config().get("model", "gpt-4o-mini")),
-        "system_model_name": load_config().get("system_model_name", "system"),
-    }
+def get_api_config(model: str = None) -> dict:
+    cfg = load_config()
+    api_key = os.environ.get("FM_API_KEY", os.environ.get("OPENAI_API_KEY", cfg.get("api_key", "")))
+    default_base = os.environ.get("FM_API_BASE", cfg.get("base_url", "https://api.openai.com/v1"))
+    default_model = os.environ.get("FM_MODEL", cfg.get("model", "gpt-4o-mini"))
+
+    if model == "system":
+        base_url = os.environ.get("FM_SYSTEM_URL", cfg.get("system_url", default_base))
+        model_name = os.environ.get("FM_SYSTEM_MODEL", cfg.get("system_model", default_model))
+    elif model == "pcc":
+        base_url = os.environ.get("FM_PCC_URL", cfg.get("pcc_url", default_base))
+        model_name = os.environ.get("FM_PCC_MODEL", cfg.get("pcc_model", default_model))
+    else:
+        base_url = default_base
+        model_name = default_model
+
+    return {"base_url": base_url, "api_key": api_key, "model": model_name}
